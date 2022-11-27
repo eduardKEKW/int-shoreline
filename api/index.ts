@@ -39,3 +39,38 @@ interface StockChardSingleDataI {
   v: number;
   vw: number;
 }
+
+interface ChardResponseI {
+  count: number;
+  results: StockChardSingleDataI[];
+}
+
+const getDateFormat = (date: Date): string => {
+  return date && date.toISOString().split('T')[0];
+};
+
+export const fetchChartData = async ({
+  name,
+  selecteDates,
+}: {
+  name: string;
+  selecteDates: [Date, Date];
+}): Promise<ChardResponseI> => {
+  if (selecteDates.length !== 2) {
+    throw new Error('No dates specified.');
+  }
+
+  const response = await fetch(
+    `https://api.polygon.io/v2/aggs/ticker/${name}/range/1/day/${getDateFormat(
+      selecteDates[0]
+    )}/${getDateFormat(
+      selecteDates[1]
+    )}?adjusted=true&sort=asc&limit=120&apiKey=_Yq7mtOj7h3HWEpwLg6MPzS3dHWt2Hm6`
+  );
+
+  if (!response.ok) {
+    throw new Error('Network response was not ok');
+  }
+
+  return response.json();
+};
