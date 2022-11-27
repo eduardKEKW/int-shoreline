@@ -16,6 +16,7 @@ import {
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { clss } from '../helpers';
 import { useMemo } from 'react';
+import useDebounce from '../hooks/useDebounce';
 
 export type ChartModeType = 'AVERAGE' | 'CANDLE';
 type DatesType = [Date, Date];
@@ -34,36 +35,50 @@ export default function ChartContainer({
   queryProps: { selecteDates, ticker },
   mode = 'AVERAGE',
 }: Props) {
+  const selecteDatesDebounced = useDebounce({
+    delay: 500,
+    value: selecteDates,
+  }); // input date sends on scroll changes
   const { isLoading, isError, data, error, isFetching, remove } = useQuery(
-    ['chart', { name: ticker?.ticker, selecteDates }],
+    ['chart', { name: ticker?.ticker, selecteDatesDebounced }],
     () =>
       fetchChartData({
         name: ticker?.ticker as unknown as string,
-        selecteDates: selecteDates as DatesType,
+        selecteDates: selecteDatesDebounced as DatesType,
       }),
     {
-      enabled: !!ticker && selecteDates?.length === 2,
+      enabled: !!ticker && selecteDatesDebounced?.length === 2,
       keepPreviousData: true,
     }
   );
 
-  const [averageData, candleData] = useMemo(() => {
-    return [
-      data?.results?.map((v) => ({
-        name: new Date(v.t).toLocaleString('en-US', {
-          timeZoneName: 'short',
-        }),
-        Price: v.l + (v.h - v.l) / 2,
-      })),
-      data?.results?.map((v) => ({
-        name: new Date(v.t).toLocaleString('en-US', {
-          timeZoneName: 'short',
-        }),
-        max: v.h,
-        min: v.l,
-      })),
-    ];
-  }, [data]);
+  const { averageData = [], candleData = [] } =
+    useMemo(() => {
+      return data?.results.reduce<{
+        averageData: { name: string; Price: number }[];
+        candleData: { name: string; max: number; min: number }[];
+      }>(
+        (acc, curr) => {
+          const name = new Date(curr.t).toLocaleString('en-US', {
+            timeZoneName: 'short',
+          });
+
+          acc.averageData.push({
+            name,
+            Price: curr.l + (curr.h - curr.l) / 2,
+          });
+
+          acc.candleData.push({
+            name,
+            max: curr.h,
+            min: curr.l,
+          });
+
+          return acc;
+        },
+        { averageData: [], candleData: [] }
+      );
+    }, [data]) || {};
 
   return (
     <div className="w-full h-96 relative">

@@ -19,7 +19,7 @@ export const fetchStocks = async ({
   name: string;
 }): Promise<IFetchStocksResults> => {
   const response = await fetch(
-    `https://api.polygon.io/v3/reference/tickers?market=stocks&search=${name}&active=true&limit=10&order=desc&apiKey=_Yq7mtOj7h3HWEpwLg6MPzS3dHWt2Hm6`
+    `${process.env.NEXT_PUBLIC_POLYGON_API}/v3/reference/tickers?market=stocks&search=${name}&active=true&limit=10&order=desc&apiKey=${process.env.NEXT_PUBLIC_POLYGON_API_KEY}`
   );
 
   if (!response.ok) {
@@ -61,11 +61,15 @@ export const fetchChartData = async ({
   }
 
   const response = await fetch(
-    `https://api.polygon.io/v2/aggs/ticker/${name}/range/1/day/${getDateFormat(
+    `${
+      process.env.NEXT_PUBLIC_POLYGON_API
+    }/v2/aggs/ticker/${name}/range/1/day/${getDateFormat(
       selecteDates[0]
     )}/${getDateFormat(
       selecteDates[1]
-    )}?adjusted=true&sort=asc&limit=120&apiKey=_Yq7mtOj7h3HWEpwLg6MPzS3dHWt2Hm6`
+    )}?adjusted=true&sort=asc&limit=120&apiKey=${
+      process.env.NEXT_PUBLIC_POLYGON_API_KEY
+    }`
   );
 
   if (!response.ok) {
