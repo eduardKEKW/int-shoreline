@@ -1,7 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-  
+
 html,
 body {
   padding: 0;
@@ -22,9 +22,15 @@ a {
 @media (prefers-color-scheme: dark) {
   html {
     color-scheme: dark;
+
+    background-color: rgb(122, 120, 120);
   }
   body {
     color: white;
-    background: black;
   }
+}
+
+.higthlithText {
+  font-weight: 600;
+  color: rgb(131, 125, 125);
 }
